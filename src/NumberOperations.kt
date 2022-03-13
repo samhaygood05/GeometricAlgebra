@@ -1,4 +1,3 @@
-import GeoAlg4D.J
 import kotlin.math.pow
 
 // Addition
@@ -20,7 +19,7 @@ operator fun Number.plus(that: TriVector4D) = MultiVector4D(this, trivec = that)
 operator fun Number.plus(that: QuadVector4D) = MultiVector4D(this, quadvec = that)
 operator fun Number.plus(that: MultiVector4D) = MultiVector4D(this) + that
 
-operator fun Number.plus(that: MultiVector): MultiVector = when (that) {
+operator fun Number.plus(that: TypeVector): TypeVector = when (that) {
     is Vector1D -> this + that
     is MultiVector1D -> this + that
 
@@ -61,7 +60,7 @@ operator fun Number.minus(that: TriVector4D) = this + -that
 operator fun Number.minus(that: QuadVector4D) = this + -that
 operator fun Number.minus(that: MultiVector4D) = this + -that
 
-operator fun Number.minus(that: MultiVector): MultiVector = when (that) {
+operator fun Number.minus(that: TypeVector): TypeVector = when (that) {
     is Vector1D -> this - that
     is MultiVector1D -> this - that
 
@@ -84,8 +83,8 @@ operator fun Number.minus(that: MultiVector): MultiVector = when (that) {
 }
 
 // Products
-infix fun Number.dot(that: MultiVector) = 0.0
-infix fun Number.wedge(that: MultiVector) = this * that
+infix fun Number.dot(that: TypeVector) = 0.0
+infix fun Number.wedge(that: TypeVector) = this * that
 
 // Multiplication
 operator fun Number.times(that: Vector1D) = Vector1D(this.toDouble() * that.x)
@@ -106,7 +105,7 @@ operator fun Number.times(that: TriVector4D) = TriVector4D(this.toDouble() * tha
 operator fun Number.times(that: QuadVector4D) = QuadVector4D(this.toDouble() * that.xyzw)
 operator fun Number.times(that: MultiVector4D) = MultiVector4D(this.toDouble() * that.scalar, this * that.vec, this * that.bivec, this * that.trivec, this * that.quadvec)
 
-operator fun Number.times(that: MultiVector): MultiVector = when (that) {
+operator fun Number.times(that: TypeVector): TypeVector = when (that) {
     is Vector1D -> this * that
     is MultiVector1D -> this * that
 
@@ -149,7 +148,7 @@ operator fun Number.div(that: BiVector4D): BiVector4D {
 operator fun Number.div(that: TriVector4D) = this * (that / that.sqrMag)
 operator fun Number.div(that: QuadVector4D) = this * (that / that.sqrMag)
 
-operator fun Number.div(that: MultiVector): MultiVector = when (that) {
+operator fun Number.div(that: TypeVector): TypeVector = when (that) {
     is Vector1D -> this / that
     is MultiVector1D -> this / that
 

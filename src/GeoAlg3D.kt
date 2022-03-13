@@ -1,10 +1,10 @@
 import GeoAlg3D.I
 import GeoAlg3D.rotor
-import java.lang.StringBuilder
+import Dimension.*
 import kotlin.math.*
 
 object GeoAlg3D {
-    @JvmStatic fun rotor(θ: Double, plane: BiVector3D) = arrayOf(exp(-θ/2 * plane.norm), exp(θ/2 * plane.norm))
+    @JvmStatic fun rotor(theta: Double, plane: BiVector3D) = arrayOf(exp(-theta/2 * plane.norm), exp(theta/2 * plane.norm))
 
     @JvmField val X = Vector3D(x = 1)
     @JvmField val Y = Vector3D(y = 1)
@@ -36,7 +36,11 @@ class Vector3D : Vector {
     val y: Double
     val z: Double
 
-    override val dimension: Int get() = 3
+    companion object {
+        @JvmField val NaN = Vector3D(Double.NaN, Double.NaN, Double.NaN)
+    }
+
+    override val dimension get() = THREE
 
     constructor(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0) {
         this.x = x.toDouble()
@@ -49,13 +53,13 @@ class Vector3D : Vector {
         this.z = z.toDouble()
     }
 
-    operator fun plus(that: Number) = that + this
+    override operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector3D) = Vector3D(x + that.x, y + that.y, z + that.z)
     operator fun plus(that: BiVector3D) = MultiVector3D(vec = this, bivec = that)
     operator fun plus(that: TriVector3D) = MultiVector3D(vec = this, trivec = that)
     operator fun plus(that: MultiVector3D) = that + this
 
-    operator fun minus(that: Number) = this + -that.toDouble()
+    override operator fun minus(that: Number) = this + -that.toDouble()
     operator fun minus(that: Vector3D) = this + -that
     operator fun minus(that: BiVector3D) = this + -that
     operator fun minus(that: MultiVector3D) = this + -that
@@ -64,7 +68,6 @@ class Vector3D : Vector {
     infix fun dot(that: BiVector3D) = Vector3D(z * that.zx - y * that.xy, x * that.xy - z * that.yz, y * that.yz - x * that.zx)
     infix fun dot(that: TriVector3D) = BiVector3D(z * that.xyz, x * that.xyz, y * that.xyz)
 
-    infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector3D) = BiVector3D(x * that.y - y * that.x, y * that.z - z * that.y, z * that.x - x * that.z)
     infix fun wedge(that: BiVector3D) = TriVector3D(x * that.yz + y * that.zx + z * that.xy)
     infix fun wedge(that: TriVector3D) = 0.0
@@ -88,8 +91,8 @@ class Vector3D : Vector {
 
     operator fun unaryMinus() = -1 * this
 
-    fun rotate(θ: Double, plane: BiVector3D): Vector3D {
-        val rotor = rotor(θ, plane)
+    fun rotate(theta: Double, plane: BiVector3D): Vector3D {
+        val rotor = rotor(theta, plane)
         return (rotor[0] * this * rotor[1]).vec
     }
 
@@ -128,8 +131,11 @@ class Vector3D : Vector {
         return result
     }
 
-    fun proj(vec: Vector3D) = (this dot (vec.norm)) * vec.norm
-    fun proj(bivec: BiVector3D) = this - this.proj(-I * bivec)
+    fun proj(vec: Vector3D): Vector3D = (this dot (vec.norm)) * vec.norm
+    fun proj(bivec: BiVector3D): Vector3D = bivec.norm dot this dot bivec.norm
+
+    fun reflect(vec: Vector3D): Vector3D = (vec.norm * this * vec.norm).vec
+    fun reflect(bivec: BiVector3D): Vector3D = (bivec.norm * this * bivec.norm).vec
 
     fun linearTrans(xTrans: Vector, yTrans: Vector, zTrans: Vector): Vector = (xTrans * x) + (yTrans * y) + (zTrans * z)
 }
@@ -138,7 +144,11 @@ class BiVector3D : BiVector {
     val yz: Double
     val zx: Double
 
-    override val dimension: Int get() = 3
+    companion object {
+        @JvmField val NaN = BiVector3D(Double.NaN, Double.NaN, Double.NaN)
+    }
+
+    override val dimension get() = THREE
 
     constructor(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0) {
         this.xy = xy.toDouble()
@@ -167,7 +177,7 @@ class BiVector3D : BiVector {
     infix fun dot(that: BiVector3D) = -(xy * that.xy + yz * that.yz + zx * that.zx)
     infix fun dot(that: TriVector3D) = Vector3D(-yz * that.xyz, -zx * that.xyz, -xy * that.xyz)
 
-    infix fun cross(that: BiVector3D) = Vector3D(zx * that.yz - yz * that.zx, xy * that.zx - zx * that.xy, yz * that.xy - xy * that.yz)
+    infix fun cross(that: BiVector3D) = BiVector3D(zx * that.yz - yz * that.zx, xy * that.zx - zx * that.xy, yz * that.xy - xy * that.yz)
 
     infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector3D) = that wedge this
@@ -197,9 +207,9 @@ class BiVector3D : BiVector {
         else arrayOf(Vector3D(-zx, yz, 0.0), Vector3D(0, 0 ,1))
     }
 
-    fun rotate(θ: Double, plane: BiVector3D): BiVector3D {
+    fun rotate(theta: Double, plane: BiVector3D): BiVector3D {
         val vectors = vectorDecomposition()
-        return vectors[0].rotate(θ, plane) wedge vectors[1].rotate(θ, plane)
+        return vectors[0].rotate(theta, plane) wedge vectors[1].rotate(theta, plane)
     }
 
     override fun toString(): String {
@@ -235,11 +245,17 @@ class BiVector3D : BiVector {
         return result
     }
 
+    fun proj(bivec: BiVector3D): BiVector3D = (-bivec.norm dot this) * bivec.norm
+
 }
 class TriVector3D(xyz: Number = 0.0) : TriVector {
     val xyz: Double = xyz.toDouble()
 
-    override val dimension: Int get() = 3
+    companion object {
+        @JvmField val NaN = TriVector3D(Double.NaN)
+    }
+
+    override val dimension get() = THREE
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector3D) = MultiVector3D(vec = that, trivec = this)
@@ -251,7 +267,7 @@ class TriVector3D(xyz: Number = 0.0) : TriVector {
     infix fun dot(that: BiVector3D) = that dot this
     infix fun dot(that: TriVector3D) = -xyz * that.xyz
 
-    infix fun wedge(that: Number) = this * that
+    override infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector3D) = 0.0
     infix fun wedge(that: BiVector3D) = 0.0
     infix fun wedge(that: TriVector3D) = 0.0
@@ -304,7 +320,11 @@ class TriVector3D(xyz: Number = 0.0) : TriVector {
 class MultiVector3D(scalar: Number = 0.0, val vec: Vector3D = Vector3D(), val bivec: BiVector3D = BiVector3D(), val trivec: TriVector3D = TriVector3D()) : MultiVector {
     val scalar = scalar.toDouble()
 
-    override val dimension get() = 3
+    companion object {
+        @JvmField val NaN = Double.NaN + Vector3D.NaN + BiVector3D.NaN + TriVector3D.NaN
+    }
+
+    override val dimension get() = THREE
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector3D) = this + MultiVector3D(vec = that)

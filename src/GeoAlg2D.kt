@@ -1,4 +1,5 @@
 import GeoAlg2D.I
+import Dimension.*
 import kotlin.math.*
 
 object GeoAlg2D {
@@ -41,14 +42,18 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
     val x: Double = x.toDouble()
     val y: Double = y.toDouble()
 
-    override val dimension: Int get() = 2
+    companion object {
+        @JvmField val NaN = Vector2D(Double.NaN, Double.NaN)
+    }
 
-    operator fun plus(that: Number) = that + this
+    override val dimension get() = TWO
+
+    override operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector2D) = Vector2D(x + that.x, y + that.y)
     operator fun plus(that: BiVector2D) = MultiVector2D(vec = this, bivec = that)
     operator fun plus(that: MultiVector2D) = that + this
 
-    operator fun minus(that: Number) = this + -that.toDouble()
+    override operator fun minus(that: Number) = this + -that.toDouble()
     operator fun minus(that: Vector2D) = this + -that
     operator fun minus(that: BiVector2D) = this + -that
     operator fun minus(that: MultiVector2D) = this + -that
@@ -56,7 +61,6 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
     infix fun dot(that: Vector2D) = x * that.x + y * that.y
     infix fun dot(that: BiVector2D) = Vector2D(-y * that.xy, x * that.xy)
 
-    infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector2D) = BiVector2D(x * that.y - y * that.x)
     infix fun wedge(that: BiVector2D) = 0.0
 
@@ -124,14 +128,19 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
         return result
     }
 
-    fun proj(vec: Vector2D) = (this dot (vec.norm)) * vec.norm
+    fun proj(vec: Vector2D): Vector2D = (vec.norm dot this) * vec.norm
+    fun reflect(vec: Vector2D): Vector2D = (vec.norm * this * vec.norm).vec
 
     fun linearTrans(xTrans: Vector, yTrans: Vector): Vector = (xTrans * x) + (yTrans * y)
 }
 class BiVector2D(xy: Number = 0.0) : BiVector {
     val xy: Double = xy.toDouble()
 
-    override val dimension: Int get() = 2
+    companion object {
+        @JvmField val NaN = BiVector2D(Double.NaN)
+    }
+
+    override val dimension get() = TWO
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector2D) = that + this
@@ -211,7 +220,11 @@ class BiVector2D(xy: Number = 0.0) : BiVector {
 class MultiVector2D(scalar: Number = 0.0, val vec: Vector2D = Vector2D(), val bivec: BiVector2D = BiVector2D()) : MultiVector {
     val scalar = scalar.toDouble()
 
-    override val dimension get() = 2
+    companion object {
+        @JvmField val NaN = Double.NaN + Vector2D.NaN + BiVector2D.NaN
+    }
+
+    override val dimension get() = TWO
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector2D) = this + MultiVector2D(vec = that)

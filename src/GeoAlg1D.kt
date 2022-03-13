@@ -1,4 +1,5 @@
 import kotlin.math.*
+import Dimension.*
 
 object GeoAlg1D {
     @JvmField val X = Vector1D(1)
@@ -9,17 +10,25 @@ object GeoAlg1D {
 class Vector1D(x: Number = 0.0) : Vector {
     val x: Double = x.toDouble()
 
-    override val dimension get() = 1
+    companion object {
+        @JvmField val NaN = Vector1D(Double.NaN)
+    }
 
-    operator fun plus(that: Number) = that + this
+    override val dimension get() = ONE
+
+    override operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector1D) = Vector1D(x + that.x)
     operator fun plus(that: MultiVector1D) = MultiVector1D(that.scalar, this + that.vec)
 
-    operator fun minus(that: Number) = this + -that.toDouble()
+    override operator fun minus(that: Number) = this + -that.toDouble()
     operator fun minus(that: Vector1D) = this + -that
     operator fun minus(that: MultiVector1D) = this + -that
 
     infix fun dot(that: Vector1D) = x * that.x
+    infix fun dot(that: MultiVector1D) = this dot that.vec
+
+    infix fun wedge(that: Vector1D) = 0.0
+    infix fun wedge(that: MultiVector1D) = this * that.scalar
 
     override val sqrMag: Double get() = mag.pow(2)
     override val mag: Double get() = x.absoluteValue
@@ -65,7 +74,11 @@ class Vector1D(x: Number = 0.0) : Vector {
 class MultiVector1D(scalar: Number = 0.0, val vec: Vector1D = Vector1D()) : MultiVector {
     val scalar: Double = scalar.toDouble()
 
-    override val dimension get() = 1
+    companion object {
+        @JvmField val NaN = Double.NaN + Vector1D.NaN
+    }
+
+    override val dimension get() = ONE
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector1D) = that + this
@@ -77,6 +90,12 @@ class MultiVector1D(scalar: Number = 0.0, val vec: Vector1D = Vector1D()) : Mult
 
     val conj: MultiVector1D get() = MultiVector1D(scalar, -vec)
     override val norm: MultiVector1D get() = MultiVector1D(scalar.sign, vec.norm)
+
+    infix fun dot(that: Vector1D) = this.vec dot that
+    infix fun dot(that: MultiVector1D) = this.vec * that.vec
+
+    infix fun wedge(that: Vector1D) = this.scalar * that
+    infix fun wedge(that: MultiVector1D) = this.scalar * that.scalar + this.scalar * that.vec + this.vec * that.scalar
 
     operator fun times(that: Number) = that * this
     operator fun times(that: Vector1D) = MultiVector1D(this.vec * that, this.scalar * that)

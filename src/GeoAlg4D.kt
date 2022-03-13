@@ -1,13 +1,13 @@
-import GeoAlg4D.J
 import GeoAlg4D.W
 import GeoAlg4D.X
 import GeoAlg4D.Y
 import GeoAlg4D.Z
 import GeoAlg4D.rotor
+import Dimension.*
 import kotlin.math.*
 
 object GeoAlg4D {
-    @JvmStatic fun rotor(θ: Double, plane: BiVector4D) = arrayOf(cos(θ/2) - (plane.norm * sin(θ/2)), cos(θ/2) + (plane.norm * sin(θ/2)))
+    @JvmStatic fun rotor(theta: Double, plane: BiVector4D) = arrayOf(cos(theta/2) - (plane.norm * sin(theta/2)), cos(theta/2) + (plane.norm * sin(theta/2)))
 
     @JvmField val X = Vector4D(x = 1)
     @JvmField val Y = Vector4D(y = 1)
@@ -59,7 +59,11 @@ class Vector4D : Vector {
     val z: Double
     val w: Double
 
-    override val dimension: Int get() = 4
+    companion object {
+        @JvmField val NaN = Vector4D(Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+    }
+
+    override val dimension get() = FOUR
 
     constructor(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0, w: Number = 0.0) {
         this.x = x.toDouble()
@@ -80,14 +84,14 @@ class Vector4D : Vector {
         this.w = w.toDouble()
     }
 
-    operator fun plus(that: Number) = MultiVector4D(vec = this, scalar = that.toDouble())
+    override operator fun plus(that: Number) = MultiVector4D(vec = this, scalar = that.toDouble())
     operator fun plus(that: Vector4D) = Vector4D(x + that.x, y + that.y, z + that.z, w + that.w)
     operator fun plus(that: BiVector4D) = MultiVector4D(vec = this, bivec = that)
     operator fun plus(that: TriVector4D) = MultiVector4D(vec = this, trivec = that)
     operator fun plus(that: QuadVector4D) = MultiVector4D(vec = this, quadvec = that)
     operator fun plus(that: MultiVector4D) = that + this
 
-    operator fun minus(that: Number) = this + -that.toDouble()
+    override operator fun minus(that: Number) = this + -that.toDouble()
     operator fun minus(that: Vector4D) = this + -that
     operator fun minus(that: BiVector4D) = this + -that
     operator fun minus(that: TriVector4D) = this + -that
@@ -99,7 +103,6 @@ class Vector4D : Vector {
     infix fun dot(that: TriVector4D) = BiVector4D(z * that.xyz + w * that.xyw, x * that.xyz + w * that.yzw, y * that.xyz + w * that.zxw, y * that.xyw - z * that.zxw, -x * that.xyw +z * that.yzw, x * that.zxw - y * that.yzw)
     infix fun dot(that: QuadVector4D) = TriVector4D(-w * that.xyzw, z * that.xyzw, x * that.xyzw, y * that.xyzw)
 
-    infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector4D) = BiVector4D(x * that.y - y * that.x, y * that.z - z * that.y, z * that.x - x * that.z, w * that.x - x * that.w, w * that.y - y * that.w, w * that.z - z * that.w)
     infix fun wedge(that: BiVector4D) = TriVector4D(x * that.yz + y * that.zx + z * that.xy, -x * that.wy + y * that.wx + w * that.xy, -y * that.wz + z * that.wy + w * that.yz, x * that.wz - z * that.wx + w * that.zx)
     infix fun wedge(that: TriVector4D) = QuadVector4D(x * that.yzw + y * that.zxw - z * that.xyw - w * that.xyz)
@@ -131,8 +134,8 @@ class Vector4D : Vector {
         else -> MultiVector4D(1.0)
     }
 
-    fun rotate(θ: Double, plane: BiVector4D): Vector4D {
-        val rotor = rotor(θ, plane)
+    fun rotate(theta: Double, plane: BiVector4D): Vector4D {
+        val rotor = rotor(theta, plane)
         return (rotor[0] * this * rotor[1]).vec
     }
 
@@ -170,8 +173,13 @@ class Vector4D : Vector {
         return result
     }
 
-    fun proj(vec: Vector4D) = (this dot (vec.norm)) * vec.norm
-    fun proj(trivec: TriVector4D) = this - this.proj(-J * trivec)
+    fun proj(vec: Vector4D) = (this dot vec.norm) * vec.norm
+    fun proj(bivec: BiVector4D) = bivec.norm dot this dot bivec.norm
+    fun proj(trivec: TriVector4D) = -trivec.norm dot this dot trivec.norm
+
+    fun reflect(vec: Vector4D): Vector4D = (vec.norm * this * vec.norm).vec
+    fun reflect(bivec: BiVector4D): Vector4D = (bivec.norm * this * bivec.norm).vec
+    fun reflect(trivec: TriVector4D): Vector4D = (-trivec.norm * this * trivec.norm).vec
 
     fun linearTrans(xTrans: Vector, yTrans: Vector, zTrans: Vector, wTrans: Vector): Vector = (xTrans * x) + (yTrans * y) + (zTrans * z) + (wTrans * w)
 }
@@ -183,7 +191,11 @@ class BiVector4D : BiVector {
     val wy: Double
     val wz: Double
 
-    override val dimension: Int get() = 4
+    companion object {
+        @JvmField val NaN = BiVector4D(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+    }
+
+    override val dimension get() = FOUR
 
     constructor(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0, wx: Number = 0.0, wy: Number = 0.0, wz: Number = 0.0) {
         this.xy = xy.toDouble()
@@ -310,11 +322,11 @@ class BiVector4D : BiVector {
         return vectors.toTypedArray()
     }
 
-    fun rotate(θ: Double, plane: BiVector4D): BiVector4D {
+    fun rotate(theta: Double, plane: BiVector4D): BiVector4D {
         val bivectors = vectorDecomposition()
         var bivec = BiVector4D()
         for (vectors in bivectors) {
-            bivec += vectors[0].rotate(θ, plane) wedge vectors[1].rotate(θ, plane)
+            bivec += vectors[0].rotate(theta, plane) wedge vectors[1].rotate(theta, plane)
         }
         return bivec
     }
@@ -365,7 +377,11 @@ class TriVector4D : TriVector {
     val yzw: Double
     val zxw: Double
 
-    override val dimension: Int get() = 4
+    companion object {
+        @JvmField val NaN = TriVector4D(Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+    }
+
+    override val dimension get() = FOUR
 
     constructor(xyz: Number = 0.0, xyw: Number = 0.0, yzw: Number = 0.0, zxw: Number = 0.0) {
         this.xyz = xyz.toDouble()
@@ -399,10 +415,10 @@ class TriVector4D : TriVector {
     infix fun dot(that: TriVector4D) = -(xyz * that.xyz + xyw * that.xyw + yzw * that.yzw + zxw * that.zxw)
     infix fun dot(that: QuadVector4D) = Vector4D(yzw * that.xyzw, zxw * that.xyzw, xyw * that.xyzw, -xyz * that.xyzw)
 
-    infix fun cross(that: BiVector4D) = -(that dot this)
+    infix fun cross(that: BiVector4D) = -(that cross this)
     infix fun cross(that: TriVector4D) = BiVector4D(zxw * that.yzw - yzw * that.zxw, xyw * that.zxw - zxw * that.xyw, yzw * that.xyw - xyw * yzw, xyz * that.yzw - yzw * that.xyz, xyz * that.zxw - zxw * that.xyz, xyz * that.xyw - xyw * that.xyz)
 
-    infix fun wedge(that: Number) = this * that
+    override infix fun wedge(that: Number) = this * that
     infix fun wedge(that: Vector4D) = -(that wedge this)
     infix fun wedge(that: BiVector4D) = 0.0
     infix fun wedge(that: TriVector4D) = 0.0
@@ -473,7 +489,11 @@ class TriVector4D : TriVector {
 class QuadVector4D(xyzw: Number = 0.0) : QuadVector {
     val xyzw: Double = xyzw.toDouble()
 
-    override val dimension: Int get() = 4
+    companion object {
+        @JvmField val NaN = QuadVector4D(Double.NaN)
+    }
+
+    override val dimension get() = FOUR
 
     operator fun plus(that: Number) = MultiVector4D(quadvec = this, scalar = that.toDouble())
     operator fun plus(that: Vector4D) = MultiVector4D(quadvec = this, vec = that)
@@ -550,7 +570,11 @@ class QuadVector4D(xyzw: Number = 0.0) : QuadVector {
 class MultiVector4D(scalar: Number = 0.0, val vec: Vector4D = Vector4D(), val bivec: BiVector4D = BiVector4D(), val trivec: TriVector4D = TriVector4D(), val quadvec: QuadVector4D = QuadVector4D()) : MultiVector {
     val scalar = scalar.toDouble()
 
-    override val dimension get() = 4
+    companion object {
+        @JvmField val NaN = Double.NaN + Vector4D.NaN + BiVector4D.NaN + TriVector4D.NaN + QuadVector4D.NaN
+    }
+
+    override val dimension get() = FOUR
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector4D) = this + MultiVector4D(vec = that)
