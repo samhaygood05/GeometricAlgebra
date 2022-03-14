@@ -1,5 +1,7 @@
 import GeoAlg2D.I
 import Dimension.*
+import GeoAlg2D.X
+import GeoAlg2D.Y
 import kotlin.math.*
 
 object GeoAlg2D {
@@ -91,7 +93,7 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
 
     fun polar(): Array<MultiVector2D> = arrayOf(mag * I + 0.0, -PI*I/2 * norm + 0.0)
 
-    fun rotate(θ: Double) = this * GeoAlg2D.exp(θ*I)
+    fun rotate(θ: Double) = (this * GeoAlg2D.exp(θ*I)).vec
 
     operator fun unaryMinus() = -1 * this
 
@@ -99,7 +101,7 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
         return if (!isZero()){
             val terms = mutableListOf<String>()
             if (x != 0.0) terms.add("${x}x")
-            if (y != 0.0) terms.add("${y}x")
+            if (y != 0.0) terms.add("${y}y")
             Util.concatenate(terms.toTypedArray(), " + ")
         } else "0.0"
     }
@@ -132,6 +134,23 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
     fun reflect(vec: Vector2D): Vector2D = (vec.norm * this * vec.norm).vec
 
     fun linearTrans(xTrans: Vector, yTrans: Vector): Vector = (xTrans * x) + (yTrans * y)
+    fun orthoProj(vec: Vector2D):Vector1D {
+
+        val xPrime = X.proj(vec)
+        val yPrime = Y.proj(vec)
+
+        return linearTrans(xPrime, yPrime).to2D().rotateFromTo(vec, X).to1D()
+    }
+    fun perspecProj(vec: Vector2D, dist: Double):Vector1D {
+
+        val xPrime = X.proj(vec)
+        val yPrime = Y.proj(vec)
+        val projDist = dist - proj(-vec*I).mag
+
+        return linearTrans(xPrime/projDist, yPrime/projDist).to2D().rotateFromTo(vec, X).to1D()
+    }
+
+    fun rotateFromTo(from: Vector2D, to: Vector2D): Vector2D = rotate(acos((from.norm) dot (to.norm)))
 }
 class BiVector2D(xy: Number = 0.0) : BiVector {
     val xy: Double = xy.toDouble()

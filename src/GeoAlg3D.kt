@@ -1,6 +1,12 @@
 import GeoAlg3D.I
 import GeoAlg3D.rotor
 import Dimension.*
+import GeoAlg3D.X
+import GeoAlg3D.XY
+import GeoAlg3D.Y
+import GeoAlg3D.YZ
+import GeoAlg3D.Z
+import GeoAlg3D.ZX
 import kotlin.math.*
 
 object GeoAlg3D {
@@ -95,12 +101,16 @@ class Vector3D : Vector {
         val rotor = rotor(theta, plane)
         return (rotor[0] * this * rotor[1]).vec
     }
+    fun rotate(plane: BiVector3D): Vector3D {
+        val rotor = rotor(plane.mag, plane.norm)
+        return (rotor[0] * this * rotor[1]).vec
+    }
 
     override fun toString(): String {
         return if (!isZero()){
             val terms = mutableListOf<String>()
             if (x != 0.0) terms.add("${x}x")
-            if (y != 0.0) terms.add("${y}x")
+            if (y != 0.0) terms.add("${y}y")
             if (z != 0.0) terms.add("${z}z")
             Util.concatenate(terms.toTypedArray(), " + ")
         } else "0.0"
@@ -131,13 +141,52 @@ class Vector3D : Vector {
         return result
     }
 
-    fun proj(vec: Vector3D): Vector3D = (this dot (vec.norm)) * vec.norm
+    fun proj(vec: Vector3D): Vector3D = (vec.norm dot this) * vec.norm
     fun proj(bivec: BiVector3D): Vector3D = bivec.norm dot this dot bivec.norm
 
     fun reflect(vec: Vector3D): Vector3D = (vec.norm * this * vec.norm).vec
     fun reflect(bivec: BiVector3D): Vector3D = (bivec.norm * this * bivec.norm).vec
 
     fun linearTrans(xTrans: Vector, yTrans: Vector, zTrans: Vector): Vector = (xTrans * x) + (yTrans * y) + (zTrans * z)
+
+    fun orthoProj(bivec: BiVector3D): Vector2D {
+
+        val xPrime = X.proj(bivec)
+        val yPrime = Y.proj(bivec)
+        val zPrime = Z.proj(bivec)
+
+        return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(bivec, XY).to2D()
+    }
+    fun orthoProj(vec: Vector3D): Vector1D {
+
+        val xPrime = X.proj(vec)
+        val yPrime = Y.proj(vec)
+        val zPrime = Z.proj(vec)
+
+        return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(vec, X).to1D()
+    }
+
+    fun perspecProj(bivec: BiVector3D, dist: Double): Vector2D {
+
+        val xPrime = X.proj(bivec)
+        val yPrime = Y.proj(bivec)
+        val zPrime = Z.proj(bivec)
+        val projDist = dist - proj(-bivec*I).mag
+
+        return linearTrans(xPrime/projDist, yPrime/projDist, zPrime/projDist).to3D().rotateFromTo(bivec, XY).to2D()
+    }
+    fun perspecProj(vec: Vector3D, dist: Double): Vector1D {
+
+        val xPrime = X.proj(vec)
+        val yPrime = Y.proj(vec)
+        val zPrime = Z.proj(vec)
+        val projDist = dist - proj(-vec*I).mag
+
+        return linearTrans(xPrime/projDist, yPrime/projDist, zPrime/projDist).to3D().rotateFromTo(vec, X).to1D()
+    }
+
+    fun rotateFromTo(from: Vector3D, to: Vector3D): Vector3D = rotate(acos((from.norm) dot (to.norm)), from.norm wedge to.norm)
+    fun rotateFromTo(from: BiVector3D, to: BiVector3D): Vector3D = rotate(acos((from.norm*I) dot (to.norm*I)), (from*I wedge to*I).norm)
 }
 class BiVector3D : BiVector {
     val xy: Double

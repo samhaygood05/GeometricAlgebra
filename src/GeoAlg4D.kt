@@ -143,7 +143,7 @@ class Vector4D : Vector {
         return if(!isZero()){
             val terms = mutableListOf<String>()
             if (x != 0.0) terms.add("${x}x")
-            if (y != 0.0) terms.add("${y}x")
+            if (y != 0.0) terms.add("${y}y")
             if (z != 0.0) terms.add("${z}z")
             if (w != 0.0) terms.add("${w}w")
             Util.concatenate(terms.toTypedArray(), " + ")
@@ -173,7 +173,7 @@ class Vector4D : Vector {
         return result
     }
 
-    fun proj(vec: Vector4D) = (this dot vec.norm) * vec.norm
+    fun proj(vec: Vector4D) = (vec.norm dot this) * vec.norm
     fun proj(bivec: BiVector4D) = bivec.norm dot this dot bivec.norm
     fun proj(trivec: TriVector4D) = -trivec.norm dot this dot trivec.norm
 

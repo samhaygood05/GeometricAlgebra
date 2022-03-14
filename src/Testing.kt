@@ -1,9 +1,9 @@
 fun main() {
-    val u = BiVector4D(1, 1, 1, 1, 1, 1)
+    val u = Vector3D(1 ,1, 1)
+    val b = GeoAlg3D.ZX
 
-    println(u.norm)
-    println("u = $u")
-    println( "1/u = ${(1 / u)}")
-    println(u / u)
-    println(u / u.norm)
+    println(u)
+    println(b)
+    println(u.proj(b))
+    println(u.orthoProj(b))
 }
