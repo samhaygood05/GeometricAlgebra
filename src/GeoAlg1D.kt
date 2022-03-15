@@ -68,7 +68,7 @@ class Vector1D(x: Number = 0.0) : Vector {
         return x.hashCode()
     }
 
-    fun linearTrans(xTrans: Vector): Vector = xTrans * x
+    fun linearTrans(xPrime: Vector): Vector = xPrime * x
 }
 
 class MultiVector1D(scalar: Number = 0.0, val vec: Vector1D = Vector1D()) : MultiVector {

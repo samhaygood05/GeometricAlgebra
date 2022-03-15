@@ -133,7 +133,7 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
     fun proj(vec: Vector2D): Vector2D = (vec.norm dot this) * vec.norm
     fun reflect(vec: Vector2D): Vector2D = (vec.norm * this * vec.norm).vec
 
-    fun linearTrans(xTrans: Vector, yTrans: Vector): Vector = (xTrans * x) + (yTrans * y)
+    fun linearTrans(xPrime: Vector, yPrime: Vector): Vector = (xPrime * x) + (yPrime * y)
     fun orthoProj(vec: Vector2D):Vector1D {
 
         val xPrime = X.proj(vec)
@@ -141,13 +141,14 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
 
         return linearTrans(xPrime, yPrime).to2D().rotateFromTo(vec, X).to1D()
     }
-    fun perspecProj(vec: Vector2D, dist: Double):Vector1D {
+    fun perspecProj(vec: Vector2D, dist: Double = 0.0, depthScale: Double = 1.0):Vector1D {
 
-        val xPrime = X.proj(vec)
-        val yPrime = Y.proj(vec)
-        val projDist = dist - proj(-vec*I).mag
+        val projDist = (dist - proj(-vec*I).mag).pow(depthScale)
 
-        return linearTrans(xPrime/projDist, yPrime/projDist).to2D().rotateFromTo(vec, X).to1D()
+        val xPrime = X.proj(vec)/projDist
+        val yPrime = Y.proj(vec)/projDist
+
+        return linearTrans(xPrime, yPrime).to2D().rotateFromTo(vec, X).to1D()
     }
 
     fun rotateFromTo(from: Vector2D, to: Vector2D): Vector2D = rotate(acos((from.norm) dot (to.norm)))

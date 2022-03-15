@@ -147,16 +147,8 @@ class Vector3D : Vector {
     fun reflect(vec: Vector3D): Vector3D = (vec.norm * this * vec.norm).vec
     fun reflect(bivec: BiVector3D): Vector3D = (bivec.norm * this * bivec.norm).vec
 
-    fun linearTrans(xTrans: Vector, yTrans: Vector, zTrans: Vector): Vector = (xTrans * x) + (yTrans * y) + (zTrans * z)
+    fun linearTrans(xPrime: Vector, yPrime: Vector, zPrime: Vector): Vector = (xPrime * x) + (yPrime * y) + (zPrime * z)
 
-    fun orthoProj(bivec: BiVector3D): Vector2D {
-
-        val xPrime = X.proj(bivec)
-        val yPrime = Y.proj(bivec)
-        val zPrime = Z.proj(bivec)
-
-        return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(bivec, XY).to2D()
-    }
     fun orthoProj(vec: Vector3D): Vector1D {
 
         val xPrime = X.proj(vec)
@@ -165,24 +157,24 @@ class Vector3D : Vector {
 
         return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(vec, X).to1D()
     }
-
-    fun perspecProj(bivec: BiVector3D, dist: Double): Vector2D {
+    fun orthoProj(bivec: BiVector3D): Vector2D {
 
         val xPrime = X.proj(bivec)
         val yPrime = Y.proj(bivec)
         val zPrime = Z.proj(bivec)
-        val projDist = dist - proj(-bivec*I).mag
 
-        return linearTrans(xPrime/projDist, yPrime/projDist, zPrime/projDist).to3D().rotateFromTo(bivec, XY).to2D()
+        return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(bivec, XY).to2D()
     }
-    fun perspecProj(vec: Vector3D, dist: Double): Vector1D {
 
-        val xPrime = X.proj(vec)
-        val yPrime = Y.proj(vec)
-        val zPrime = Z.proj(vec)
-        val projDist = dist - proj(-vec*I).mag
+    fun perspecProj(bivec: BiVector3D, dist: Double = 0.0, depthScale: Double = 1.0): Vector2D {
 
-        return linearTrans(xPrime/projDist, yPrime/projDist, zPrime/projDist).to3D().rotateFromTo(vec, X).to1D()
+        val projDist = (dist - proj(-bivec*I).mag).pow(depthScale)
+
+        val xPrime = X.proj(bivec)/projDist
+        val yPrime = Y.proj(bivec)/projDist
+        val zPrime = Z.proj(bivec)/projDist
+
+        return linearTrans(xPrime, yPrime, zPrime).to3D().rotateFromTo(bivec, XY).to2D()
     }
 
     fun rotateFromTo(from: Vector3D, to: Vector3D): Vector3D = rotate(acos((from.norm) dot (to.norm)), from.norm wedge to.norm)

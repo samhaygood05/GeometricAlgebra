@@ -4,6 +4,8 @@ import GeoAlg4D.Y
 import GeoAlg4D.Z
 import GeoAlg4D.rotor
 import Dimension.*
+import GeoAlg4D.J
+import GeoAlg4D.XYZ
 import kotlin.math.*
 
 object GeoAlg4D {
@@ -181,7 +183,41 @@ class Vector4D : Vector {
     fun reflect(bivec: BiVector4D): Vector4D = (bivec.norm * this * bivec.norm).vec
     fun reflect(trivec: TriVector4D): Vector4D = (-trivec.norm * this * trivec.norm).vec
 
-    fun linearTrans(xTrans: Vector, yTrans: Vector, zTrans: Vector, wTrans: Vector): Vector = (xTrans * x) + (yTrans * y) + (zTrans * z) + (wTrans * w)
+    fun linearTrans(xPrime: Vector, yPrime: Vector, zPrime: Vector, wPrime: Vector): Vector = (xPrime * x) + (yPrime * y) + (zPrime * z) + (wPrime * w)
+
+    fun orthoProj(vec: Vector4D): Vector1D {
+
+        val xPrime = X.proj(vec)
+        val yPrime = Y.proj(vec)
+        val zPrime = Z.proj(vec)
+        val wPrime = W.proj(vec)
+
+        return linearTrans(xPrime, yPrime, zPrime, wPrime).to4D().rotateFromTo(vec, X).to1D()
+    }
+    fun orthoProj(trivec: TriVector4D): Vector3D {
+
+        val xPrime = X.proj(trivec)
+        val yPrime = Y.proj(trivec)
+        val zPrime = Z.proj(trivec)
+        val wPrime = W.proj(trivec)
+
+        return linearTrans(xPrime, yPrime, zPrime, wPrime).to4D().rotateFromTo(trivec, XYZ).to3D()
+    }
+
+    fun perspecProj(trivec: TriVector4D, dist: Double = 0.0, depthScale: Double = 1.0): Vector3D {
+
+        val projDist = (dist - proj(-trivec*J).mag).pow(depthScale)
+
+        val xPrime = X.proj(trivec)/projDist
+        val yPrime = Y.proj(trivec)/projDist
+        val zPrime = Z.proj(trivec)/projDist
+        val wPrime = W.proj(trivec)/projDist
+
+        return linearTrans(xPrime, yPrime, zPrime, wPrime).to4D().rotateFromTo(trivec, XYZ).to3D()
+    }
+
+    fun rotateFromTo(from: Vector4D, to: Vector4D): Vector4D = rotate(acos((from.norm) dot (to.norm)), from.norm wedge to.norm)
+    fun rotateFromTo(from: TriVector4D, to: TriVector4D): Vector4D = rotate(acos((from.norm*J) dot (to.norm*J)), (from*J wedge to*J).norm)
 }
 class BiVector4D : BiVector {
     val xy: Double
