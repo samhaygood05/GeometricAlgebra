@@ -37,7 +37,7 @@ object GeoAlg3D {
     @JvmStatic fun ln(trivec: TriVector3D) = ln(trivec.mag) + PI*trivec.norm/2
 }
 
-class Vector3D : Vector {
+class Vector3D(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0) : Vector {
     val x: Double
     val y: Double
     val z: Double
@@ -47,17 +47,6 @@ class Vector3D : Vector {
     }
 
     override val dimension get() = THREE
-
-    constructor(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0) {
-        this.x = x.toDouble()
-        this.y = y.toDouble()
-        this.z = z.toDouble()
-    }
-    constructor(vec: Vector2D, z: Number = 0.0) {
-        x = vec.x
-        y = vec.y
-        this.z = z.toDouble()
-    }
 
     override operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector3D) = Vector3D(x + that.x, y + that.y, z + that.z)
@@ -179,8 +168,14 @@ class Vector3D : Vector {
 
     fun rotateFromTo(from: Vector3D, to: Vector3D): Vector3D = rotate(acos((from.norm) dot (to.norm)), from.norm wedge to.norm)
     fun rotateFromTo(from: BiVector3D, to: BiVector3D): Vector3D = rotate(acos((from.norm*I) dot (to.norm*I)), (from*I wedge to*I).norm)
+
+    init {
+        this.x = x.toDouble()
+        this.y = y.toDouble()
+        this.z = z.toDouble()
+    }
 }
-class BiVector3D : BiVector {
+class BiVector3D(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0) : BiVector {
     val xy: Double
     val yz: Double
     val zx: Double
@@ -190,17 +185,6 @@ class BiVector3D : BiVector {
     }
 
     override val dimension get() = THREE
-
-    constructor(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0) {
-        this.xy = xy.toDouble()
-        this.yz = yz.toDouble()
-        this.zx = zx.toDouble()
-    }
-    constructor(bivec: BiVector2D, yz: Number = 0.0, zx: Number = 0.0) {
-        xy = bivec.xy
-        this.yz = yz.toDouble()
-        this.zx = zx.toDouble()
-    }
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector3D) = that + this
@@ -287,6 +271,12 @@ class BiVector3D : BiVector {
     }
 
     fun proj(bivec: BiVector3D): BiVector3D = (-bivec.norm dot this) * bivec.norm
+
+    init {
+        this.xy = xy.toDouble()
+        this.yz = yz.toDouble()
+        this.zx = zx.toDouble()
+    }
 
 }
 class TriVector3D(xyz: Number = 0.0) : TriVector {

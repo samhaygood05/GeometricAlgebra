@@ -55,7 +55,7 @@ object GeoAlg4D {
     @JvmStatic fun ln(trivec: TriVector4D) = ln(trivec.mag) + PI*trivec.norm/2
 }
 
-class Vector4D : Vector {
+class Vector4D(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0, w: Number = 0.0) : Vector {
     val x: Double
     val y: Double
     val z: Double
@@ -66,25 +66,6 @@ class Vector4D : Vector {
     }
 
     override val dimension get() = FOUR
-
-    constructor(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0, w: Number = 0.0) {
-        this.x = x.toDouble()
-        this.y = y.toDouble()
-        this.z = z.toDouble()
-        this.w = w.toDouble()
-    }
-    constructor(vec: Vector2D, z: Number = 0.0, w: Number = 0.0) {
-        x = vec.x
-        y = vec.y
-        this.z = z.toDouble()
-        this.w = w.toDouble()
-    }
-    constructor(vec: Vector3D, w: Number = 0.0) {
-        x = vec.x
-        y = vec.y
-        z = vec.z
-        this.w = w.toDouble()
-    }
 
     override operator fun plus(that: Number) = MultiVector4D(vec = this, scalar = that.toDouble())
     operator fun plus(that: Vector4D) = Vector4D(x + that.x, y + that.y, z + that.z, w + that.w)
@@ -218,8 +199,15 @@ class Vector4D : Vector {
 
     fun rotateFromTo(from: Vector4D, to: Vector4D): Vector4D = rotate(acos((from.norm) dot (to.norm)), from.norm wedge to.norm)
     fun rotateFromTo(from: TriVector4D, to: TriVector4D): Vector4D = rotate(acos((from.norm*J) dot (to.norm*J)), (from*J wedge to*J).norm)
+
+    init {
+        this.x = x.toDouble()
+        this.y = y.toDouble()
+        this.z = z.toDouble()
+        this.w = w.toDouble()
+    }
 }
-class BiVector4D : BiVector {
+class BiVector4D(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0, wx: Number = 0.0, wy: Number = 0.0, wz: Number = 0.0) : BiVector {
     val xy: Double
     val yz: Double
     val zx: Double
@@ -232,31 +220,6 @@ class BiVector4D : BiVector {
     }
 
     override val dimension get() = FOUR
-
-    constructor(xy: Number = 0.0, yz: Number = 0.0, zx: Number = 0.0, wx: Number = 0.0, wy: Number = 0.0, wz: Number = 0.0) {
-        this.xy = xy.toDouble()
-        this.yz = yz.toDouble()
-        this.zx = zx.toDouble()
-        this.wx = wx.toDouble()
-        this.wy = wy.toDouble()
-        this.wz = wz.toDouble()
-    }
-    constructor(bivec: BiVector2D, yz: Number = 0.0, zx: Number = 0.0, wx: Number = 0.0, wy: Number = 0.0, wz: Number = 0.0) {
-        this.xy = bivec.xy
-        this.yz = yz.toDouble()
-        this.zx = zx.toDouble()
-        this.wx = wx.toDouble()
-        this.wy = wy.toDouble()
-        this.wz = wz.toDouble()
-    }
-    constructor(bivec: BiVector3D, wx: Number = 0.0, wy: Number = 0.0, wz: Number = 0.0) {
-        this.xy = bivec.xy
-        this.yz = bivec.yz
-        this.zx = bivec.zx
-        this.wx = wx.toDouble()
-        this.wy = wy.toDouble()
-        this.wz = wz.toDouble()
-    }
 
     operator fun plus(that: Number) = MultiVector4D(bivec = this, scalar = that.toDouble())
     operator fun plus(that: Vector4D) = MultiVector4D(bivec = this, vec = that)
@@ -406,8 +369,17 @@ class BiVector4D : BiVector {
         result = 31 * result + wz.hashCode()
         return result
     }
+
+    init {
+        this.xy = xy.toDouble()
+        this.yz = yz.toDouble()
+        this.zx = zx.toDouble()
+        this.wx = wx.toDouble()
+        this.wy = wy.toDouble()
+        this.wz = wz.toDouble()
+    }
 }
-class TriVector4D : TriVector {
+class TriVector4D(xyz: Number = 0.0, xyw: Number = 0.0, yzw: Number = 0.0, zxw: Number = 0.0) : TriVector {
     val xyz: Double
     val xyw: Double
     val yzw: Double
@@ -418,19 +390,6 @@ class TriVector4D : TriVector {
     }
 
     override val dimension get() = FOUR
-
-    constructor(xyz: Number = 0.0, xyw: Number = 0.0, yzw: Number = 0.0, zxw: Number = 0.0) {
-        this.xyz = xyz.toDouble()
-        this.xyw = xyw.toDouble()
-        this.yzw = yzw.toDouble()
-        this.zxw = zxw.toDouble()
-    }
-    constructor(trivec: TriVector3D, xyw: Number = 0.0, yzw: Number = 0.0, zxw: Number = 0.0) {
-        xyz = trivec.xyz
-        this.xyw = xyw.toDouble()
-        this.yzw = yzw.toDouble()
-        this.zxw = zxw.toDouble()
-    }
 
     operator fun plus(that: Number) = that + this
     operator fun plus(that: Vector4D) = MultiVector4D(trivec = this, vec = that)
@@ -520,6 +479,13 @@ class TriVector4D : TriVector {
         result = 31 * result + yzw.hashCode()
         result = 31 * result + zxw.hashCode()
         return result
+    }
+
+    init {
+        this.xyz = xyz.toDouble()
+        this.xyw = xyw.toDouble()
+        this.yzw = yzw.toDouble()
+        this.zxw = zxw.toDouble()
     }
 }
 class QuadVector4D(xyzw: Number = 0.0) : QuadVector {
