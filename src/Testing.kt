@@ -1,3 +1,6 @@
+import geoAlg.GeoAlg3D
+import geoAlg.Vector3D
+
 fun main() {
     val u = Vector3D(1 ,1, 1)
     val b = GeoAlg3D.ZX
