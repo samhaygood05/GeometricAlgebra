@@ -111,15 +111,15 @@ interface Vector : KVector {
         }
     fun to3D(): Vector3D = when (this) {
             is Vector1D -> Vector3D(x, 0, 0)
-            is Vector2D -> Vector3D(this)
+            is Vector2D -> Vector3D(x, y, 0)
             is Vector3D -> this
             is Vector4D -> Vector3D(x, y, z)
             else -> Vector3D()
         }
     fun to4D(): Vector4D = when (this) {
             is Vector1D -> Vector4D(x, 0 ,0, 0)
-            is Vector2D -> Vector4D(this)
-            is Vector3D -> Vector4D(this)
+            is Vector2D -> Vector4D(x, y, 0, 0)
+            is Vector3D -> Vector4D(x, y, z, 0)
             is Vector4D -> this
             else -> Vector4D()
         }
@@ -509,14 +509,14 @@ interface BiVector: KVector {
             else -> BiVector2D()
         }
     fun to3D(): BiVector3D = when (this) {
-            is BiVector2D -> BiVector3D(this)
+            is BiVector2D -> BiVector3D(xy, 0,0)
             is BiVector3D -> this
             is BiVector4D -> BiVector3D(xy, yz, zx)
             else -> BiVector3D()
         }
     fun to4D(): BiVector4D = when (this) {
-            is BiVector2D -> BiVector4D(this)
-            is BiVector3D -> BiVector4D(this)
+            is BiVector2D -> BiVector4D(xy, 0, 0, 0, 0, 0)
+            is BiVector3D -> BiVector4D(xy, yz, zx, 0, 0, 0)
             is BiVector4D -> this
             else -> BiVector4D()
 
@@ -648,7 +648,7 @@ interface TriVector : KVector {
             else -> TriVector3D()
         }
     fun to4D(): TriVector4D = when (this) {
-            is TriVector3D -> TriVector4D(this)
+            is TriVector3D -> TriVector4D(xyz, 0, 0, 0)
             is TriVector4D -> this
             else -> TriVector4D()
         }
