@@ -8,6 +8,7 @@ import geoAlg.GeoAlg4D.rotor
 import geoAlg.Dimension.*
 import geoAlg.GeoAlg4D.J
 import geoAlg.GeoAlg4D.XYZ
+import java.awt.Color
 import kotlin.math.*
 
 object GeoAlg4D {
@@ -95,6 +96,8 @@ class Vector4D(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0, w: Number = 0.
 
     override val sqrMag: Double get() = this dot this
     override val norm: Vector4D get() = if (isZero()) Vector4D() else this / mag
+
+    val color: Color get() = if (w != 0.0) Color((x/w).toFloat(), (y/w).toFloat(), (z/w).toFloat()) else to3D().color
 
     override operator fun times(that: Number) = that * this
     operator fun times(that: Vector4D) = (this dot that) + (this wedge that)

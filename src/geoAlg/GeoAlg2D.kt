@@ -95,7 +95,7 @@ class Vector2D(x: Number = 0.0, y: Number = 0.0) : Vector {
 
     fun polar(): Array<MultiVector2D> = arrayOf(mag * I + 0.0, -PI*I/2 * norm + 0.0)
 
-    fun rotate(θ: Double) = (this * GeoAlg2D.exp(θ*I)).vec
+    fun rotate(theta: Double) = (this * GeoAlg2D.exp(theta*I)).vec
 
     operator fun unaryMinus() = -1 * this
 

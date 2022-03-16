@@ -9,6 +9,7 @@ import geoAlg.GeoAlg3D.Y
 import geoAlg.GeoAlg3D.YZ
 import geoAlg.GeoAlg3D.Z
 import geoAlg.GeoAlg3D.ZX
+import java.awt.Color
 import kotlin.math.*
 
 object GeoAlg3D {
@@ -73,6 +74,7 @@ class Vector3D(x: Number = 0.0, y: Number = 0.0, z: Number = 0.0) : Vector {
 
     override val sqrMag: Double get() = this dot this
     override val norm: Vector3D get() = if (isZero()) Vector3D() else this / mag
+    val color: Color get() = Color(x.toFloat(), y.toFloat(), z.toFloat())
 
     override operator fun times(that: Number) = that * this
     operator fun times(that: Vector3D) = (this dot that) + (this wedge that)
