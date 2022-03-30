@@ -7,4 +7,12 @@ object Util {
         }
         return out
     }
+
+    fun isZero(array : Array<Double>) : Boolean {
+        var bool: Boolean = true
+        for (element : Double in array) {
+            bool = bool && element == 0.0
+        }
+        return bool
+    }
 }
